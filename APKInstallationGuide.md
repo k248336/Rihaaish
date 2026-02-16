@@ -2,6 +2,8 @@ Download and Install Guide
 
 You can install the Rihaaish app on your Android device by downloading the APK file from this repository.
 
+https://drive.google.com/file/d/1AOZgC3KcpkgwF6ebs1fTXPIes5OaKBYB/view?usp=sharing
+
 Steps to Install
 
 Download the APK file from this repository to your Android phone.
