@@ -1,6 +1,6 @@
-import axios from 'axios';
 import { store } from '../store';
 import { api_urls, utility } from '../../utilities';
+import { httpClient } from '../../api/httpClient';
 
 export const postService = (
   api: any,
@@ -16,8 +16,8 @@ export const postService = (
     },
   };
 
-  return axios
-    .post(api_urls.base_url + api, data || {}, config)
+  return httpClient
+    .post(api, data || {}, config)
     .then(res => {
       return res;
     })
