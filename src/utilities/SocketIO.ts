@@ -5,7 +5,8 @@ const BASE_URL_SOCKET = 'https://api.vitalarchive.trangotechdevs.com';
 
 const socket = SocketIOClient(BASE_URL_SOCKET, {
   transports: ['websocket'],
-  autoConnect: true,
+  /** Avoid connecting until chat is wired to your backend (saves battery without server). */
+  autoConnect: false,
 });
 
 export const EVENTS = {
