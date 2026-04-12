@@ -1,12 +1,12 @@
-import axios from 'axios';
 import { store } from '../store';
 import { api_urls, utility } from '../../utilities';
+import { httpClient } from '../../api/httpClient';
 
 export const putService = (
   api: any,
   data: any,
   showError = true,
-  configuration: any,
+  configuration?: any,
 ) => {
   const config = {
     headers: {
@@ -16,8 +16,8 @@ export const putService = (
     },
   };
 
-  return axios
-    .put(api_urls.base_url + api, data || {}, config)
+  return httpClient
+    .put(api, data || {}, config)
     .then(res => {
       return res;
     })
