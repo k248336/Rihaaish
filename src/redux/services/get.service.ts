@@ -1,6 +1,6 @@
-import axios from 'axios';
 import { store } from '../store';
 import { api_urls } from '../../utilities';
+import { httpClient } from '../../api/httpClient';
 
 export const getService = async (api: any, params?: any) => {
   const config = {
@@ -11,8 +11,8 @@ export const getService = async (api: any, params?: any) => {
     params: params || {},
   };
 
-  return axios
-    .get(api_urls.base_url + api, config)
+  return httpClient
+    .get(api, config)
     .then(res => {
       return res;
     })

@@ -304,6 +304,7 @@ export const screens = {
 };
 
 export const api_urls = {
+  /** Set to your Python API root (with trailing slash). Leave empty to use the bundled mock API. */
   base_url: '',
   service_token: '',
 

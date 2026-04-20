@@ -1,9 +1,9 @@
 import 'react-native-gesture-handler';
-import React, { useEffect } from 'react';
+import './src/api/initMockApi';
+import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Provider } from 'react-redux';
 import FlashMessage from 'react-native-flash-message';
-import SplashScreen from 'react-native-splash-screen';
 import { PersistGate } from 'redux-persist/integration/react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
