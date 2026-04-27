@@ -1,0 +1,43 @@
+Project Name: Rihaaish (Smart Property Dealing App)
+Group Leader: Mubashir Ali
+Date: 09 February 2026
+____________________________________
+
+Week: 14 Cost Baseline Report
+
+1. Summary:
+This week, the team mainly focused on resolving QA-reported issues 
+and improving application usability and functionality.
+
+2. Effort Distribution (This Week):
+
+- QA Issue Analysis & Debugging        : 40%
+- UI/UX Fixes                         : 25%
+- Backend/API Fixes (OTP issue)       : 15%
+- Testing & Validation                : 20%
+
+3. Key QA Observations Addressed:
+
+- Keyboard obstructing input fields while typing
+- “Send OTP” button not functioning
+- Missing message when no property is listed
+- No button for fetching current location on map screen
+- Notifications screen showing sample/static data
+- Search bar not responsive
+
+4. Cost Impact:
+
+- No additional external cost incurred
+- Effort utilized from existing development resources
+- Minor increase in time allocation due to bug fixing and re-testing
+
+5. Baseline Status:
+
+The project remains within the planned cost baseline.
+This week’s effort was focused on quality improvement rather than new development.
+
+____________________________________
+
+Conclusion:
+The team was actively engaged in resolving QA issues to stabilize 
+the application. No major cost deviation occurred.
