@@ -28,6 +28,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
 }) => {
   const [showPicker, setShowPicker] = useState(false);
 
+  const ISO_DATE_FORMAT = 'YYYY-MM-DD';
+
   const formatDisplayValue = () => {
     if (!value) return placeholder;
 
@@ -47,7 +49,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
     const formattedDate =
       mode === 'time'
         ? moment(date).format('HH:mm')
-        : moment(date).format('MMMM DD');
+        : moment(date).format(ISO_DATE_FORMAT);
 
     onDateChange(formattedDate);
   };
@@ -58,7 +60,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
     }
 
     try {
-      let momentDate = moment(value, 'MMMM DD');
+      let momentDate = moment(value, ISO_DATE_FORMAT, true);
+      if (!momentDate.isValid()) {
+        momentDate = moment(value, 'MMMM DD');
+      }
       if (!momentDate.isValid()) {
         momentDate = moment(value, 'MMM DD');
       }

@@ -9,7 +9,7 @@ import {
 import moment from 'moment';
 // import Clipboard from '@react-native-clipboard/clipboard';
 import { showMessage, MessageType } from 'react-native-flash-message';
-import { colors } from './constants';
+// import { colors } from './constants';
 // import Share from 'react-native-share';
 
 class Utility {
@@ -55,7 +55,7 @@ class Utility {
     type,
     message: msg,
     duration: 3000,
-    backgroundColor: colors.primary,
+    backgroundColor: 'red',
     icon: { icon: 'auto', position: 'left' },
   });
 
@@ -71,7 +71,7 @@ class Utility {
       message: msg || '',
       duration: duration || 3000,
       icon: { icon: 'auto', position: 'left' } as any,
-      backgroundColor: type === 'success' ? colors.success : colors.danger,
+      backgroundColor: type === 'success' ? 'green' : 'red',
     });
   };
 
@@ -135,18 +135,33 @@ class Utility {
 
   checkError = (api: string, error: any) => {
     console.log(`${api} error: `, JSON.stringify(error.response || error));
-    let showError = error.response?.data?.message || error.message;
-    console.log('showError ===>', showError);
 
-    if (error.response?.data) {
-      let data = error.response.data?.message;
-      if (Array.isArray(data)) {
-        data = error.response.data?.message[0];
-        const values = Object.keys(data).map(key => data[key]);
-        showError = values.join('\n');
+    const responseData = error.response?.data ?? error.data;
+    let showError: string =
+      responseData?.message ?? error.message ?? 'Something went wrong';
+
+    // Extract field-level errors from nested `data` object
+    // e.g. { message: "Invalid data", data: { username: ["A user with that username already exists."] } }
+    const fieldErrors = responseData?.data;
+    if (
+      fieldErrors &&
+      typeof fieldErrors === 'object' &&
+      !Array.isArray(fieldErrors)
+    ) {
+      const messages: string[] = [];
+      Object.values(fieldErrors).forEach((val: any) => {
+        if (Array.isArray(val)) {
+          val.forEach((v: any) => messages.push(String(v)));
+        } else if (typeof val === 'string') {
+          messages.push(val);
+        }
+      });
+      if (messages.length > 0) {
+        showError = messages.join('\n');
       }
     }
 
+    console.log('showError ===>', showError);
     this.showAlertMessage('danger', showError);
     return error.response;
   };

@@ -25,6 +25,9 @@ import {
   icons,
 } from '../../utilities';
 
+/** Theme-safe colors for Animated interpolation (outputRange must not include undefined). */
+const slideIconTintMid = '#B8ACFC';
+
 const OnBoarding = () => {
   const dispatch = useAppDispatch();
   const { colors, isDarkMode } = useTheme();
@@ -85,23 +88,33 @@ const OnBoarding = () => {
         style={{
           justifyContent: 'flex-end',
           paddingHorizontal: 20,
-          marginBottom: 50,
+          marginBottom: 20,
         }}
       >
-        <Image style={dynamicStyles(colors).logo} source={icons.logo} tintColor={colors.primary} />
+        <Image style={dynamicStyles(colors).logo} source={icons.logo} tintColor={colors.purple2} />
         <CustomText
           color={colors.black}
-          style={{ lineHeight: 0, fontWeight: '300' }}
+          fontSize={28}
+          style={{ fontWeight: '300', lineHeight: 30, marginTop: heightPixel(8) }}
         >
           Perfect choice
         </CustomText>
-        <CustomText style={{ lineHeight: 0, fontWeight: '800' }} fontSize={44} color={colors.primary}>
-          for your future
+        <CustomText
+          fontSize={42}
+          color={colors.primary}
+          style={{ fontWeight: '800', lineHeight: 48, marginTop: heightPixel(0) }}
+        >
+          for your future.
         </CustomText>
         <CustomText
-          style={{ letterSpacing: 0.01, marginTop: 3 }}
-          fontSize={20}
-          color={colors.greaytext}
+          fontSize={14}
+          color={'#333333'}
+          style={{
+            letterSpacing: 0.2,
+            lineHeight: 22,
+            marginTop: heightPixel(0),
+            fontWeight: '400',
+          }}
         >
           Our properties the masterpiece for every client with lasting value.
         </CustomText>
@@ -191,7 +204,7 @@ const OnBoarding = () => {
               {
                 tintColor: translateX.interpolate({
                   inputRange: [0, threshold * 0.8, threshold],
-                  outputRange: [colors.white, colors.lightpurple, colors.purple1],
+                  outputRange: [colors.white, slideIconTintMid, colors.purple1],
                   extrapolate: 'clamp',
                 }),
               },

@@ -11,7 +11,13 @@ export const strings = {
   enterConfirmPassword: 'Confirm your password!',
   passwordMismatch: "Password and Confirm Password didn't match!",
   postAddedSuccessfully: 'Post added successfully!',
+  propertyAddedSuccessfully: 'Property listed successfully.',
+  propertyDeletedSuccessfully: 'Property deleted successfully.',
+  propertyUpdatedSuccessfully: 'Property updated successfully.',
+  enterPropertyTitle: 'Please enter the property title.',
+  enterPropertyAddress: 'Please pick the location on the map for the address.',
   userLogin: 'User Login Successfully',
+  signupSuccess: 'Account created successfully.',
   storyAddedSuccessfully: 'Story added successfully!',
   resetPassword:
   'Your password has been reset successfully. Please login to continue.',
@@ -27,6 +33,7 @@ export const strings = {
   accountAlreadyRegistered:
     'Account already registered with this email address.',
   accountDeleteSuccess: 'Your account has been deleted successfully.',
+  passwordChangedSuccess: 'Your password has been updated successfully.',
   agreeToTerms: 'Please agree to our terms & conditions!',
   reportingComment: 'Please write a comment, why are you reporting this?',
   postReportedSuccess: 'Post reported successfully.',

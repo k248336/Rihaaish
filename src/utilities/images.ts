@@ -114,6 +114,8 @@ export const icons = {
   language: require('../assets/icons/language.png'),
   listedproperty: require('../assets/icons/listedproperty.png'),
   chatappicon: require('../assets/icons/chatappicon.png'),
+  warning: require('../assets/icons/warning.png'),
+
 
   
 

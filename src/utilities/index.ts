@@ -9,4 +9,6 @@ export * from './constants';
 export { getShadows } from './Shadows';
 // export * from './SocketIO';
 export * from './strings';
+export * from './nameInput';
+export * from './phoneNumberMeta';
 export * from './images';
