@@ -9,7 +9,12 @@
     "postinstall": "patch-package",
     "start": "react-native start",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "perf:performance": "k6 run load-testing/performance.js",
+    "perf:stress": "k6 run load-testing/stress.js",
+    "perf:load": "k6 run load-testing/load-capacity.js",
+    "perf:volume": "k6 run load-testing/volume.js",
+    "perf:soak": "k6 run load-testing/soak.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
