@@ -1,7 +1,13 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import Slider from '@react-native-community/slider';
-import React, { useLayoutEffect, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { heightPixel, widthPixel } from '../../../utilities/helpers';
 import {
@@ -10,16 +16,55 @@ import {
   WelcomeHeader,
   CustomTabs,
 } from '../../../components';
-import { getAppStyles, getShadows, icons, utility } from '../../../utilities';
+import {
+  getAppStyles,
+  getShadows,
+  icons,
+  screens,
+  strings,
+  utility,
+} from '../../../utilities';
 import { ImagePickerModal } from '../../../components/modals';
 import { CustomText, CustomTextInput } from '../../../components';
 import MultiImagePicker from '../../../components/MultiImagePicker';
 import { TabView } from 'react-native-tab-view';
-import { useTheme } from '../../../hooks';
+import { useAppDispatch, useTheme } from '../../../hooks';
+import {
+  createProperty,
+  hideLoader,
+  showLoader,
+  updateProperty,
+} from '../../../redux/slices';
+import { listPropertyImageUrls } from '../Profile/listedPropertyMapping';
 import { useTranslation } from '../../../utilities/translations';
 
+/** Default map pin (Islamabad) — sent in API only, not shown on screen */
+const DEFAULT_LOCATION_LAT = '33.6844';
+const DEFAULT_LOCATION_LNG = '73.0479';
+
+function tabIndexForApiPropertyType(propertyType: string): number {
+  const s = propertyType.trim();
+  if (['Shop', 'Office', 'Warehouse'].includes(s)) {
+    return 2;
+  }
+  if (['Residential', 'Commercial'].includes(s)) {
+    return 1;
+  }
+  return 0;
+}
+
+function parseSqftFromApi(size: unknown): number {
+  if (typeof size === 'number' && Number.isFinite(size)) {
+    return size;
+  }
+  const n = parseInt(String(size ?? '').replace(/\D/g, ''), 10);
+  return Number.isFinite(n) ? n : 1500;
+}
+
 export default function AddProperty() {
-  const navigation = useNavigation();
+  const dispatch = useAppDispatch();
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const insets = useSafeAreaInsets();
   const { colors, isDarkMode } = useTheme();
   const appStyles = getAppStyles(isDarkMode);
@@ -37,6 +82,7 @@ export default function AddProperty() {
     string | null
   >(null);
   const [priceRange, setPriceRange] = useState(0);
+  const [sizeSqft, setSizeSqft] = useState(1500);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [numBeds, setNumBeds] = useState<string>('');
   const [numWashrooms, setNumWashrooms] = useState<string>('');
@@ -56,14 +102,135 @@ export default function AddProperty() {
   ]);
 
   const [multiImages, setMultiImages] = useState<any[]>([]);
+  const [editingPropertyId, setEditingPropertyId] = useState<string | null>(
+    null,
+  );
+  const [mapLatLng, setMapLatLng] = useState({
+    lat: DEFAULT_LOCATION_LAT,
+    lng: DEFAULT_LOCATION_LNG,
+  });
 
-  const Header = ({ insets }: { insets: any }) => {
+  /** Tracks last loaded edit `property.id` so we only reset when leaving edit for a new add — not when merging `pickedLocation` from LocationPicker. */
+  const lastLoadedPropertyIdRef = useRef<string | null>(null);
+
+  const resetAddPropertyForm = useCallback(() => {
+    setEditingPropertyId(null);
+    setMapLatLng({ lat: DEFAULT_LOCATION_LAT, lng: DEFAULT_LOCATION_LNG });
+    setCoverPhoto(null);
+    setMultiImages([]);
+    setIWantTo('Sell');
+    setLocations(['Gulshan', 'Shah Faisal', 'DHA']);
+    setShowLocationInput(false);
+    setNewLocation('');
+    setTabIndex(0);
+    setPropertyType('Home');
+    setSelectedPropertySubType(null);
+    setPriceRange(0);
+    setSizeSqft(1500);
+    setSelectedLocations([]);
+    setNumBeds('');
+    setNumWashrooms('');
+    setPropertyTitle('');
+    setDescription('');
+    setAddress('');
+  }, []);
+
+  useEffect(() => {
+    const p = route.params?.property as Record<string, unknown> | undefined;
+    const editId = p?.id != null ? String(p.id) : null;
+
+    if (editId == null) {
+      if (lastLoadedPropertyIdRef.current != null) {
+        lastLoadedPropertyIdRef.current = null;
+        resetAddPropertyForm();
+      }
+      return;
+    }
+
+    if (!p) {
+      return;
+    }
+
+    lastLoadedPropertyIdRef.current = editId;
+    setEditingPropertyId(editId);
+    const editLat = Number(p.location_lat ?? DEFAULT_LOCATION_LAT);
+    const editLng = Number(p.location_lng ?? DEFAULT_LOCATION_LNG);
+    setMapLatLng({
+      lat: Number.isFinite(editLat)
+        ? editLat.toFixed(6)
+        : DEFAULT_LOCATION_LAT,
+      lng: Number.isFinite(editLng)
+        ? editLng.toFixed(6)
+        : DEFAULT_LOCATION_LNG,
+    });
+    setPropertyTitle(String(p.title ?? ''));
+    setDescription(String(p.description ?? ''));
+    const priceNum =
+      typeof p.price === 'number'
+        ? p.price
+        : parseFloat(String(p.price ?? '0'));
+    setPriceRange(Number.isFinite(priceNum) ? priceNum : 0);
+    setSizeSqft(parseSqftFromApi(p.size));
+    setNumBeds(String(p.bedrooms ?? ''));
+    setNumWashrooms(String(p.washrooms ?? ''));
+    setAddress(String(p.address ?? ''));
+
+    const pt = String(p.property_type ?? '');
+    const idx = tabIndexForApiPropertyType(pt);
+    setTabIndex(idx);
+    const tabKeys = ['Home', 'Plot', 'Commercial'] as const;
+    setPropertyType(tabKeys[idx] ?? 'Home');
+    setSelectedPropertySubType(pt || null);
+
+    const city = String(p.city ?? 'Islamabad').trim() || 'Islamabad';
+    setLocations(prev => (prev.includes(city) ? prev : [...prev, city]));
+    setSelectedLocations([city]);
+
+    const urls = listPropertyImageUrls(p);
+    if (urls.length > 0) {
+      setCoverPhoto(urls[0]);
+      setMultiImages(urls.slice(1).map(uri => ({ uri })));
+    } else {
+      setCoverPhoto(null);
+      setMultiImages([]);
+    }
+  }, [route.params?.property, resetAddPropertyForm]);
+
+  useEffect(() => {
+    const pick = route.params?.pickedLocation as
+      | { address: string; latitude: number; longitude: number }
+      | undefined;
+    if (!pick) {
+      return;
+    }
+    const latOk =
+      typeof pick.latitude === 'number' &&
+      Number.isFinite(pick.latitude);
+    const lngOk =
+      typeof pick.longitude === 'number' &&
+      Number.isFinite(pick.longitude);
+    if (!latOk || !lngOk) {
+      return;
+    }
+    if (pick.address?.trim()) {
+      setAddress(pick.address.trim());
+    }
+    setMapLatLng({
+      lat: pick.latitude.toFixed(6),
+      lng: pick.longitude.toFixed(6),
+    });
+    navigation.setParams({ pickedLocation: undefined } as never);
+  }, [route.params?.pickedLocation, navigation]);
+
+  const headerTitle = editingPropertyId ? t('EditProperty') : t('AddProperty');
+
+  const Header = ({ insets, title }: { insets: any; title: string }) => {
     return (
       <WelcomeHeader
         containerStyle={{
           paddingTop: insets?.top || heightPixel(5),
         }}
-        name={t('AddProperty')}
+        name={title}
         hideProfile={true}
         profile={false}
       />
@@ -72,10 +239,10 @@ export default function AddProperty() {
   useLayoutEffect(() => {
     navigation.setOptions({
       header: () => {
-        return <Header insets={insets} />;
+        return <Header insets={insets} title={headerTitle} />;
       },
     });
-  }, [insets, navigation]);
+  }, [insets, navigation, headerTitle]);
   const house = [
     { id: 1, name: t('House') },
     { id: 2, name: t('Flat') },
@@ -185,23 +352,76 @@ export default function AddProperty() {
     }
   };
 
-  const generatePayload = () => {
-    const payload = {
-      coverPhoto: coverPhoto,
-      multiImages: multiImages.map(img => img?.uri),
-      iWantTo: iWantTo,
-      selectedLocations: selectedLocations,
-      propertyType: propertyType,
-      propertySubType: selectedPropertySubType,
-      priceRange: priceRange,
-      propertyTitle: propertyTitle,
-      numBeds: parseInt(numBeds),
-      numWashrooms: parseInt(numWashrooms),
-      description: description,
-      address: address,
-    };
-    console.log('Generated Payload:', payload);
-    return payload;
+  const handleCreateProperty = async () => {
+    if (!propertyTitle.trim()) {
+      utility.showAlertMessage('danger', strings.enterPropertyTitle);
+      return;
+    }
+    if (!address.trim()) {
+      utility.showAlertMessage('danger', strings.enterPropertyAddress);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('title', propertyTitle.trim());
+    formData.append('description', description.trim() || '—');
+    formData.append('price', Number(priceRange).toFixed(2));
+    formData.append(
+      'property_type',
+      selectedPropertySubType || propertyType || 'Home',
+    );
+    formData.append('size', `${Math.round(sizeSqft)} sqft`);
+    formData.append('city', selectedLocations[0] || 'Islamabad');
+    formData.append('address', address.trim() || '—');
+    formData.append('bedrooms', String(numBeds || '0'));
+    formData.append('washrooms', String(numWashrooms || '0'));
+    formData.append(
+      'location_lat',
+      Number(mapLatLng.lat).toFixed(6),
+    );
+    formData.append(
+      'location_lng',
+      Number(mapLatLng.lng).toFixed(6),
+    );
+
+    if (coverPhoto) {
+      formData.append('uploaded_images', {
+        uri: coverPhoto,
+        type: 'image/jpeg',
+        name: 'cover.jpg',
+      } as any);
+    }
+    multiImages.forEach((img, i) => {
+      const uri = img?.uri;
+      if (uri) {
+        formData.append('uploaded_images', {
+          uri,
+          type: 'image/jpeg',
+          name: `property_${i}.jpg`,
+        } as any);
+      }
+    });
+
+    dispatch(showLoader());
+    try {
+      if (editingPropertyId) {
+        await dispatch(
+          updateProperty({ id: editingPropertyId, formData }),
+        ).unwrap();
+        utility.showAlertMessage(
+          'success',
+          strings.propertyUpdatedSuccessfully,
+        );
+      } else {
+        await dispatch(createProperty(formData)).unwrap();
+        utility.showAlertMessage('success', strings.propertyAddedSuccessfully);
+      }
+      navigation.goBack();
+    } catch {
+      // postFormDataService / patchFormDataService already surfaced via checkError
+    } finally {
+      dispatch(hideLoader());
+    }
   };
 
   return (
@@ -248,6 +468,49 @@ export default function AddProperty() {
         onChange={setMultiImages}
         max={6}
       />
+
+<View
+        style={[
+          appStyles.flexRow,
+          {
+            marginTop: heightPixel(20),
+            gap: 5,
+          },
+        ]}
+      >
+        <CustomText
+          fontSize={16}
+          weight="medium"
+          color={colors.primary}
+          style={dynamicStyles(colors)?.inputLabel}
+        >
+          {t('EnterAddress')}
+        </CustomText>
+        <CustomText color={colors.red}>*</CustomText>
+      </View>
+
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() =>
+          navigation.navigate(screens.LocationPickerScreen, {
+            initialAddress: address,
+            initialLatitude: Number(mapLatLng.lat) || Number(DEFAULT_LOCATION_LAT),
+            initialLongitude: Number(mapLatLng.lng) || Number(DEFAULT_LOCATION_LNG),
+          })
+        }
+      >
+        <CustomTextInput
+          returnKeyType="next"
+          autoCapitalize="none"
+          rightIcon={icons.location}
+          placeholderTextColor={colors.greish}
+          placeholder={t('Enterpropertyaddress')}
+          value={address}
+          editable={false}
+          pointerEvents="none"
+          containerStyle={dynamicStyles(colors)?.textInputContainer}
+        />
+      </TouchableOpacity>
 
       <View
         style={[
@@ -491,6 +754,44 @@ export default function AddProperty() {
           fontSize={16}
           color={colors.primary}
           weight="medium"
+          style={dynamicStyles(colors)?.inputLabel}
+        >
+          {t('propertySize')}
+        </CustomText>
+        <CustomText color={colors.red}>*</CustomText>
+      </View>
+
+      <Slider
+        style={dynamicStyles(colors).slider}
+        minimumValue={500}
+        maximumValue={10000}
+        step={100}
+        value={sizeSqft}
+        onValueChange={setSizeSqft}
+        minimumTrackTintColor={colors.purple1}
+        maximumTrackTintColor={colors.greaytext}
+        thumbTintColor={colors.purple1}
+      />
+      <CustomTextInput
+        placeholder={t('propertySize')}
+        value={`${Math.round(sizeSqft)} sqft`}
+        editable={false}
+        containerStyle={dynamicStyles(colors)?.textInputContainer}
+      />
+
+      <View
+        style={[
+          appStyles.flexRow,
+          {
+            marginTop: heightPixel(20),
+            gap: 5,
+          },
+        ]}
+      >
+        <CustomText
+          fontSize={16}
+          color={colors.primary}
+          weight="medium"
           style={dynamicStyles(colors).inputLabel}
         >
           {t('BedsWashrooms')}
@@ -550,35 +851,20 @@ export default function AddProperty() {
         value={description}
         onChangeText={setDescription}
       />
-      <View
-        style={[
-          appStyles.flexRow,
-          {
-            marginTop: heightPixel(0),
-          },
-        ]}
-      >
-        <CustomText
-          fontSize={16}
-          weight="medium"
-          color={colors.primary}
-          style={dynamicStyles(colors)?.inputLabel}
-        >
-          {t('EnterAddress')}
-        </CustomText>
-        <CustomText color={colors.red}>*</CustomText>
-      </View>
 
-      <CustomTextInput
-        placeholder={t('Enterpropertyaddress')}
-        containerStyle={dynamicStyles(colors)?.textInputContainer}
-        value={address}
-        onChangeText={setAddress}
-      />
+
+      {/* <CustomText
+        fontSize={12}
+        color={colors.greish}
+        style={{ marginTop: heightPixel(6), marginLeft: widthPixel(2) }}
+      >
+        {`Lat ${Number(mapLatLng.lat).toFixed(6)} · Lng ${Number(mapLatLng.lng).toFixed(6)}`}
+      </CustomText> */}
+
       <CustomButton
         gradient
-        title={t('AddProperty')}
-        onPress={generatePayload}
+        title={editingPropertyId ? t('saveChanges') : t('AddProperty')}
+        onPress={handleCreateProperty}
       />
     </CustomScrollView>
   );

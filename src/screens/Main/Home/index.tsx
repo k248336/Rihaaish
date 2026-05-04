@@ -3,4 +3,12 @@ import NewProjects from './NewProjects';
 import Notification from './Notification';
 import PropertyDetail from './PropertyDetail';
 import AddProperty from './AddProperty';
-export { Home, NewProjects, Notification, PropertyDetail, AddProperty };
+import LocationPickerScreen from './LocationPickerScreen';
+export {
+  Home,
+  NewProjects,
+  Notification,
+  PropertyDetail,
+  AddProperty,
+  LocationPickerScreen,
+};

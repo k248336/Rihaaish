@@ -1,0 +1,61 @@
+diff --git a/node_modules/react-native-phone-number-input/lib/index.js b/node_modules/react-native-phone-number-input/lib/index.js
+index b89c388..f02fbef 100644
+--- a/node_modules/react-native-phone-number-input/lib/index.js
++++ b/node_modules/react-native-phone-number-input/lib/index.js
+@@ -19,11 +19,12 @@ export default class PhoneInput extends PureComponent {
+     super(props);
+     this.state = {
+       code: props.defaultCode ? undefined : "91",
+-      number: props.value
+-        ? props.value
+-        : props.defaultValue
+-        ? props.defaultValue
+-        : "",
++      number:
++        props.value !== undefined
++          ? props.value
++          : props.defaultValue !== undefined
++            ? props.defaultValue
++            : "",
+       modalVisible: false,
+       countryCode: props.defaultCode ? props.defaultCode : "IN",
+       disabled: props.disabled || false,
+@@ -31,14 +32,25 @@ export default class PhoneInput extends PureComponent {
+   }
+ 
+   static getDerivedStateFromProps(nextProps, prevState) {
+-    if (nextProps.disabled !== prevState.disabled) {
++    const nextDisabled = nextProps.disabled || false;
++    if (nextProps.value !== undefined && nextProps.value !== prevState.number) {
++      return { number: nextProps.value, disabled: nextDisabled };
++    }
++    if (
++      nextProps.value === undefined &&
++      nextProps.defaultValue !== undefined &&
++      nextProps.defaultValue !== prevState.number
++    ) {
++      return { number: nextProps.defaultValue, disabled: nextDisabled };
++    }
++    if (nextDisabled !== prevState.disabled) {
+       if ((nextProps.value || nextProps.value === "") && nextProps.value !== prevState.number) {
+-        return ({ disabled: nextProps.disabled, number: nextProps.value });
++        return { disabled: nextProps.disabled, number: nextProps.value };
+       }
+-      return ({ disabled: nextProps.disabled });
++      return { disabled: nextProps.disabled };
+     }
+     return null;
+-  };
++  }
+ 
+   async componentDidMount() {
+     const { defaultCode } = this.props;
+@@ -191,7 +203,7 @@ export default class PhoneInput extends PureComponent {
+               disableNativeModal={disabled}
+               visible={modalVisible}
+               theme={withDarkTheme ? DARK_THEME : DEFAULT_THEME}
+-              renderFlagButton={this.renderFlagButton}
++              // renderFlagButton={this.renderFlagButton}
+               onClose={() => this.setState({ modalVisible: false })}
+               {...countryPickerProps}
+             />

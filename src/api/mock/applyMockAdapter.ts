@@ -1,4 +1,4 @@
-import type { AxiosInstance } from 'axios';
+type AxiosInstance = any;
 import MockAdapter from 'axios-mock-adapter';
 import {
   mockAuthUser,
@@ -30,6 +30,16 @@ export function applyMockAdapter(client: AxiosInstance): void {
   adapter = new MockAdapter(client, { delayResponse: 0 });
 
   const loginShape = { data: { ...mockAuthUser } };
+  const signupSuccessShape = {
+    status: 'success',
+    message: 'Registered (mock)',
+    data: {
+      tokens: {
+        access: 'mock-access-token',
+        refresh: 'mock-refresh-token',
+      },
+    },
+  };
 
   adapter.onAny().reply(config => {
     const method = (config.method || 'get').toLowerCase();
@@ -37,8 +47,14 @@ export function applyMockAdapter(client: AxiosInstance): void {
 
     const ok = (body: unknown, status = 200) => [status, body] as const;
 
-    if (method === 'post' && path === 'user/login') {
+    if (
+      method === 'post' &&
+      (path === 'user/login' || path === 'api/v1/auth/login')
+    ) {
       return ok(loginShape);
+    }
+    if (method === 'post' && path === 'api/v1/auth/signup') {
+      return ok(signupSuccessShape);
     }
     if (method === 'post' && path === 'user/social-login') {
       return ok(loginShape);
@@ -52,6 +68,24 @@ export function applyMockAdapter(client: AxiosInstance): void {
         unknown
       >;
       return ok({ data: profile });
+    }
+    if (method === 'get' && path === 'api/v1/profile/') {
+      return ok({
+        status: 'success',
+        message: 'Profile (mock)',
+        data: {
+          id: 1,
+          username: 'demo',
+          email: mockAuthUser.email,
+          first_name: 'Demo',
+          last_name: 'User',
+          profile: {
+            avatar_url: '',
+            phone: mockAuthUser.mobile_no,
+            bio: 'Mock bio',
+          },
+        },
+      });
     }
     if (method === 'patch' && path === 'user') {
       let body: Record<string, unknown> = {};

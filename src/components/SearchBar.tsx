@@ -1,7 +1,7 @@
 import React, { FC, useState } from 'react';
-import { Image, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image, TextInput, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { font, heightPixel, widthPixel } from '../utilities/helpers';
-import { fontFamily, getAppStyles, getShadows, icons } from '../utilities';
+import { getShadows, icons } from '../utilities';
 import { ISearchBar } from '../interface';
 import { useTheme } from '../hooks';
 
@@ -23,16 +23,12 @@ const SearchBar: FC<ISearchBar> = props => {
     // setSearchText('');
     onChangeText?.('');
   };
-  const { colors, isDarkMode } = useTheme();
-  const appStyles = getAppStyles(isDarkMode);
+  const { colors } = useTheme();
+  const containerCombined = [dynamicStyles(colors).container, containerStyle];
+  const useViewRoot = Boolean(onChangeText);
 
-  return (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      disabled={!onPress}
-      onPress={onPress}
-      style={[dynamicStyles(colors).container, containerStyle]}
-    >
+  const inner = (
+    <>
       <Image
         resizeMode="contain"
         source={icons.searchtab}
@@ -66,19 +62,21 @@ const SearchBar: FC<ISearchBar> = props => {
           />
         </TouchableOpacity>
       )}
+    </>
+  );
 
-      {/* {(value !== '' || searchText !== '') && (
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={onPressClear}
-          hitSlop={{top: 5, bottom: 5, left: 5, right: 5}}>
-          <Image
-            resizeMode="contain"
-            source={icons.cross}
-            style={[styles.crossIconStyle, {tintColor: colors.greish}]}
-          />
-        </TouchableOpacity>
-      )} */}
+  if (useViewRoot) {
+    return <View style={containerCombined}>{inner}</View>;
+  }
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      disabled={!onPress}
+      onPress={onPress}
+      style={containerCombined}
+    >
+      {inner}
     </TouchableOpacity>
   );
 };

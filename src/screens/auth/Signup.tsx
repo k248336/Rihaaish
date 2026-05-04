@@ -1,14 +1,7 @@
 import { Formik } from 'formik';
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
-import {
-  getAppStyles,
-  getColors,
-  icons,
-  navigate,
-  pop,
-  screens,
-} from '../../utilities';
+import { filterNameKeyInput, getAppStyles, icons, screens } from '../../utilities';
 import useSignUpController from '../../controllers/AuthControllers/SignUp';
 import { heightPixel, widthPixel } from '../../utilities/helpers';
 import {
@@ -59,17 +52,30 @@ const Signup = () => {
           errors,
           touched,
         }) => (
-          console.log(errors, 'erererer'),
-          (
             <View>
+              <CustomTextInput
+                returnKeyType="next"
+                autoCapitalize="none"
+                autoCorrect={false}
+                label={t('username')}
+                placeholder={t('enterUsername')}
+                onChangeText={handleChange('username')}
+                value={data.username}
+                onBlur={handleBlur('username')}
+                errors={errors.username}
+                focus={touched.username}
+              />
+
               <View style={appStyles.flexRowBetween}>
                 <View style={{ width: '48.5%' }}>
                   <CustomTextInput
                     label={t('firstName')}
-                    maxLength={15}
+                    maxLength={150}
                     returnKeyType="next"
                     placeholder={t('firstName')}
-                    onChangeText={handleChange('firstname')}
+                    onChangeText={text =>
+                      handleChange('firstname')(filterNameKeyInput(text))
+                    }
                     value={data.firstname}
                     onBlur={handleBlur('firstname')}
                     errors={errors.firstname}
@@ -79,12 +85,15 @@ const Signup = () => {
 
                 <View style={{ width: '48.5%' }}>
                   <CustomTextInput
-                    maxLength={15}
+                    maxLength={150}
                     label={t('lastName')}
                     returnKeyType="next"
                     placeholder={t('lastName')}
-                    onChangeText={handleChange('lastname')}
+                    onChangeText={text =>
+                      handleChange('lastname')(filterNameKeyInput(text))
+                    }
                     value={data.lastname}
+                    onBlur={handleBlur('lastname')}
                     errors={errors.lastname}
                     focus={touched.lastname}
                   />
@@ -124,7 +133,7 @@ const Signup = () => {
                 focus={touched.password}
               />
 
-              <CustomTextInput
+              {/* <CustomTextInput
                 passwordField
                 icon={icons.lock}
                 label={t('confirmPassword')}
@@ -133,7 +142,7 @@ const Signup = () => {
                 onChangeText={handleChange('confirm_password')}
                 errors={errors.confirm_password}
                 focus={touched.confirm_password}
-              />
+              /> */}
 
               <AnimatedCheckbox
                 size={20}
@@ -181,15 +190,9 @@ const Signup = () => {
               <CustomButton
                 gradient
                 title={t('register')}
-                onPress={() => {
-                  navigate(screens.otpVerification, {
-                    email: data.email,
-                  });
-                }}
-                // onPress={() => handleSubmit()}
+                onPress={() => handleSubmit()}
               />
             </View>
-          )
         )}
       </Formik>
 

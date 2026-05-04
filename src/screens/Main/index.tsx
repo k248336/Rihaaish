@@ -10,9 +10,10 @@ import { SupportChat } from './Profile';
 import { AboutUs } from './Profile';
 import { Language } from './Profile';
 import { Security } from './Profile';
+import ChangePassword from './Profile/ChangePassword';
 import { Notification } from './Home';
 import { PropertyDetail } from './Home';
-import { AddProperty } from './Home';
+import { AddProperty, LocationPickerScreen } from './Home';
 export {
   Favourite,
   Home,
@@ -26,7 +27,9 @@ export {
   AboutUs,
   Language,
   Security,
+  ChangePassword,
   Notification,
   PropertyDetail,
-  AddProperty
+  AddProperty,
+  LocationPickerScreen,
 };
