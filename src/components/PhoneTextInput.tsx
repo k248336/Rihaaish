@@ -1,11 +1,4 @@
-import React, {
-  FC,
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import React, { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Image,
@@ -14,18 +7,54 @@ import {
   View,
 } from 'react-native';
 import PhoneInput from 'react-native-phone-number-input';
-import { getAppStyles, getShadows, images } from '../utilities';
+import { getMaxNationalNumberLength, getShadows } from '../utilities';
 import { IPhoneTextInput } from '../interface';
 import { heightPixel, widthPixel } from '../utilities/helpers';
 import CustomText from './CustomText';
 import { useTheme } from '../hooks';
 
+/**
+ * The library's TextInput is only the national (local) part; the +XX shows beside it.
+ * Formik may store E.164 from onChangeFormattedText — map that to national for `value`.
+ */
+function toNationalDigits(stored: string | undefined, callingCode: string): string {
+  if (stored == null) {
+    return '';
+  }
+  const s = String(stored).trim();
+  if (!s) {
+    return '';
+  }
+  if (s.startsWith('+')) {
+    const digits = s.slice(1).replace(/\D/g, '');
+    if (!digits) {
+      return '';
+    }
+    const code = String(callingCode).replace(/\D/g, '');
+    if (code && digits.startsWith(code)) {
+      return digits.slice(code.length);
+    }
+    return digits;
+  }
+  return s.replace(/\D/g, '');
+}
+
 const PhoneTextInput: FC<IPhoneTextInput> = forwardRef((props, ref) => {
   const { icon, value, setValue, placeholder, errors, focus } = props;
-  const { colors, isDarkMode } = useTheme();
-  const appStyles = getAppStyles(isDarkMode);
-  const inputRef = useRef(null);
+  const { colors } = useTheme();
+  const [callingCode, setCallingCode] = useState('92');
+  const [countryCca, setCountryCca] = useState('PK');
   const [focused, setFocused] = useState(false);
+
+  const nationalValue = useMemo(
+    () => toNationalDigits(value, callingCode),
+    [value, callingCode],
+  );
+
+  const nationalMaxLength = useMemo(
+    () => getMaxNationalNumberLength(countryCca),
+    [countryCca],
+  );
 
   const slideAnim = useRef(new Animated.Value(-100)).current;
 
@@ -38,31 +67,35 @@ const PhoneTextInput: FC<IPhoneTextInput> = forwardRef((props, ref) => {
     }
   }, [errors]);
 
-  const onSelect = (val: string) => {
-    console.log('onSelect: ', val);
-  };
-
   return (
     <View style={{ flex: 0 }}>
       <View style={[dynamicStyles(colors).container]}>
         <View style={dynamicStyles(colors).iconView}>
-          <Image
-            source={icon}
-            resizeMode="contain"
-            style={[
-              dynamicStyles(colors).iconStyle,
-              { tintColor: focused ? colors.white : colors.gray },
-            ]}
-          />
+          {icon ? (
+            <Image
+              source={icon}
+              resizeMode="contain"
+              style={[
+                dynamicStyles(colors).iconStyle,
+                { tintColor: focused ? colors.white : colors.gray },
+              ]}
+            />
+          ) : (
+            <View style={dynamicStyles(colors).iconStyle} />
+          )}
         </View>
 
         <PhoneInput
-          defaultCode="US"
-          defaultValue={value}
+          defaultCode="PK"
+          value={nationalValue}
           placeholder={placeholder}
           onChangeFormattedText={setValue}
+          onChangeCountry={country => {
+            setCountryCca(String(country?.cca2 ?? 'PK').toUpperCase());
+            setCallingCode(String(country?.callingCode?.[0] ?? '92'));
+          }}
           textInputProps={{
-            maxLength: 10,
+            maxLength: nationalMaxLength,
             editable: true,
             cursorColor: colors.gray,
             onBlur: () => setFocused(false),

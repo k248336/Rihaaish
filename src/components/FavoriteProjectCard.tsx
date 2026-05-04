@@ -12,6 +12,20 @@ import { heightPixel, widthPixel } from '../utilities/helpers';
 import GradientView from './GradientView';
 import { useTheme } from '../hooks';
 
+const LOCATION_MAX_WORDS = 100;
+
+function truncateToWords(text: string, maxWords: number): string {
+  const trimmed = (text || '').trim();
+  if (!trimmed) {
+    return '';
+  }
+  const words = trimmed.split(/\s+/);
+  if (words.length <= maxWords) {
+    return trimmed;
+  }
+  return `${words.slice(0, maxWords).join(' ')}…`;
+}
+
 interface FavoriteProjectCardProps {
   item: {
     id: string;
@@ -30,6 +44,8 @@ interface FavoriteProjectCardProps {
   onPressDelete?: () => void;
 
   isFavorite: boolean;
+  /** Favourites tab: filled heart + tint so “saved” state is obvious before toggle. */
+  emphasizeFilledHeart?: boolean;
   listedProperty?: boolean;
 }
 
@@ -37,6 +53,7 @@ const FavoriteProjectCard: React.FC<FavoriteProjectCardProps> = ({
   item,
   onPressFavorite,
   isFavorite,
+  emphasizeFilledHeart,
   listedProperty,
   onPressEdit,
   onPressCard,
@@ -77,7 +94,11 @@ const FavoriteProjectCard: React.FC<FavoriteProjectCardProps> = ({
                       isFavorite ? icons.favouritelogo : icons.unfavourite
                     }
                     style={dynamicStyles(colors).heartIcon}
-                    // tintColor={isDarkMode ? colors.white : colors.primary}
+                    // tintColor={
+                    //   emphasizeFilledHeart && isFavorite
+                    //     ? colors.purple1
+                    //     : undefined
+                    // }
                   />
                 </TouchableOpacity>
               )}
@@ -88,7 +109,7 @@ const FavoriteProjectCard: React.FC<FavoriteProjectCardProps> = ({
                 style={dynamicStyles(colors).locationIcon}
               />
               <CustomText fontSize={10} color={colors.greaytext}>
-                {item.location}
+                {truncateToWords(item.location || '', LOCATION_MAX_WORDS)}
               </CustomText>
             </View>
           </View>

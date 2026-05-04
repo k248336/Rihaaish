@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { AuthSchema } from '../../models';
-import { navigate, pop, strings, utility } from '../../utilities';
+import { navigate, pop, strings, utility, sanitizeNameForApi } from '../../utilities';
 import { useAppDispatch, useAppSelector, useToggle } from '../../hooks';
 import {
+  getProfile,
   hideLoader,
   showLoader,
   updateProfile,
-  updloadAttachment,
 } from '../../redux/slices';
 
 const useEditProfileControllers = () => {
@@ -17,62 +17,43 @@ const useEditProfileControllers = () => {
   const [image, setImage] = useState<string>('');
 
   const initialValues = {
-    email: userInfo?.email,
-    firstname: userInfo?.firstname,
-    lastname: userInfo?.lastname,
-    mobile_no: userInfo?.mobile_no,
+    email: userInfo?.email ?? '',
+    firstname: userInfo?.firstname ?? '',
+    lastname: userInfo?.lastname ?? '',
+    mobile_no: userInfo?.mobile_no ?? '',
+    bio: userInfo?.bio ?? '',
+    dob: userInfo?.date_of_birth ?? '',
+    location: '',
   };
 
-  const handleEditProfile = async (values: any) => {
+  const handleEditProfile = async (values: typeof initialValues) => {
     dispatch(showLoader());
 
-    const payload = {
-      firstname: values.firstname,
-      lastname: values.lastname,
-    } as any;
+    const formData = new FormData();
+    formData.append('first_name', sanitizeNameForApi(String(values.firstname ?? '')));
+    formData.append('last_name', sanitizeNameForApi(String(values.lastname ?? '')));
+    formData.append('phone', String(values.mobile_no ?? '').trim());
+    formData.append('bio', String(values.bio ?? '').trim());
+    formData.append('date_of_birth', String(values.dob ?? '').trim());
 
     if (image) {
-      const selectedImage = {
-        file: { uri: image, type: 'image/jpeg', name: 'image.jpg' },
-        path: 'user',
-      };
-
-      const formData = new FormData();
-      Object.entries(selectedImage).forEach(entry => {
-        formData.append(entry[0], entry[1]);
-      });
-
-      updloadAttachment(formData)
-        .then(res => {
-          // console.log('updloadAttachment res: ', res);
-
-          if (res?.length) {
-            payload['image_url'] = res[0];
-          }
-          onUpdateProfile(payload);
-        })
-        .catch(err => {
-          dispatch(hideLoader());
-          utility.showAlertMessage('danger', strings.somethingWentWrong);
-        });
-    } else {
-      onUpdateProfile(payload);
+      formData.append('avatar', {
+        uri: image,
+        type: 'image/jpeg',
+        name: 'avatar.jpg',
+      } as any);
     }
-  };
+    console.log(formData, 'formData');
 
-  const onUpdateProfile = async (payload: any) => {
-    dispatch(updateProfile(payload))
-      .unwrap()
-      .then(res => {
-        // console.log('updateProfile res: ', res);
-
-        dispatch(hideLoader());
-        utility.showAlertMessage('success', strings.profileUpdated);
-        pop();
-      })
-      .catch(err => {
-        dispatch(hideLoader());
-      });
+    try {
+      await dispatch(updateProfile(formData)).unwrap();
+      await dispatch(getProfile()).unwrap();
+      dispatch(hideLoader());
+      utility.showAlertMessage('success', strings.profileUpdated);
+      pop();
+    } catch {
+      dispatch(hideLoader());
+    }
   };
 
   const navigateToScreen = (name: string) => {
@@ -82,7 +63,7 @@ const useEditProfileControllers = () => {
   return {
     values: {
       schema: AuthSchema.editProfileSchema,
-      initialValues: initialValues,
+      initialValues,
       imgPickerModal,
       image,
       userInfo,

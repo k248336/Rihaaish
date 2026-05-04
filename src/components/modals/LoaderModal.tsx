@@ -1,8 +1,11 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Modal from 'react-native-modal';
+import LottieView from 'lottie-react-native';
 import { utility, deviceHeight } from '../../utilities';
 import { useAppSelector } from '../../hooks';
+
+const loaderSource = require('../../assets/lottie/loading-sand-clock.json');
 
 interface LoaderModalProps {
   visible?: boolean;
@@ -26,7 +29,15 @@ export default function LoaderModal(props: LoaderModalProps) {
       backdropTransitionOutTiming={0}
       deviceHeight={deviceHeight + deviceHeight}
     >
-      <ActivityIndicator size="large" color={'red'} />
+      <View style={styles.lottieContainer}>
+        <LottieView
+          source={loaderSource}
+          autoPlay
+          loop
+          resizeMode="contain"
+          style={styles.lottie}
+        />
+      </View>
     </Modal>
   );
 }
@@ -35,5 +46,13 @@ const styles = StyleSheet.create({
   modalStyle: {
     margin: 0,
     paddingBottom: utility.isPlatformIOS ? 85 : 65,
+  },
+  lottieContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lottie: {
+    width: 140,
+    height: 140,
   },
 });

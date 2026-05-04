@@ -10,4 +10,6 @@ export { getShadows } from './Shadows';
 export * from './DummyData'
 // export * from './SocketIO';
 export * from './strings';
+export * from './nameInput';
+export * from './phoneNumberMeta';
 export * from './images';
