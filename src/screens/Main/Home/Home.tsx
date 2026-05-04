@@ -2,12 +2,12 @@ import {
   Image,
   ImageBackground,
   StyleSheet,
-  Text,
   View,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
   CustomButton,
   CustomScrollView,
@@ -21,26 +21,86 @@ import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   getAppStyles,
-  getColors,
   icons,
   images,
   navigate,
   screens,
-  // Shadows,
 } from '../../../utilities';
 import { heightPixel, widthPixel } from '../../../utilities/helpers';
 import LinearGradient from 'react-native-linear-gradient';
 import ProjectCard from '../../../components/ProjectCard'; // Corrected import path
-import { newProjectsData, recentProjectsData } from '../../../data/projectData'; // Corrected import path
-import { useTheme } from '../../../hooks';
+import { useAppDispatch, useAppSelector, useTheme } from '../../../hooks';
 import { useTranslation } from '../../../utilities/translations';
+import {
+  fetchAllProperties,
+  toggleFavoriteProperty,
+} from '../../../redux/slices/property';
+import {
+  toListedPropertyCard,
+  type ListedPropertyCard,
+} from '../Profile/listedPropertyMapping';
+import { hideLoader, showLoader } from '../../../redux/slices';
+
+type HomePropertyItem = ListedPropertyCard & { isFavorite: boolean };
+
+function mapApiToHomeItem(p: Record<string, unknown>): HomePropertyItem {
+  return {
+    ...toListedPropertyCard(p),
+    isFavorite: Boolean(p.is_favorite),
+  };
+}
+
+const HOME_PREVIEW_COUNT = 2;
 
 export default function Home() {
   const { colors, isDarkMode } = useTheme();
   const appStyles = getAppStyles(isDarkMode);
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+  const { userInfo } = useAppSelector(s => s.auth);
 
-  console.log(isDarkMode, 'isDarkModeisDarkModeisDarkMode');
+  const [properties, setProperties] = useState<HomePropertyItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadProperties = useCallback(async () => {
+    dispatch(showLoader());
+    try {
+      const raw = await dispatch(fetchAllProperties()).unwrap();
+      setProperties(
+        (raw as Record<string, unknown>[]).map(mapApiToHomeItem),
+      );
+    } catch {
+      setProperties([]);
+    } finally {
+      dispatch(hideLoader());
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    loadProperties();
+  }, [loadProperties]);
+
+  const newProjectsPreview = useMemo(
+    () => properties.slice(0, HOME_PREVIEW_COUNT),
+    [properties],
+  );
+
+  const recentProjectsPreview = useMemo(
+    () => properties.slice(0, HOME_PREVIEW_COUNT),
+    [properties],
+  );
+
+  const welcomeName = useMemo(() => {
+    const f = userInfo.firstname?.trim();
+    const l = userInfo.lastname?.trim();
+    if (f || l) {
+      return [f, l].filter(Boolean).join(' ');
+    }
+    if (userInfo.email) {
+      return userInfo.email.split('@')[0] || userInfo.email;
+    }
+    return 'Guest';
+  }, [userInfo.firstname, userInfo.lastname, userInfo.email]);
 
   const Header = ({ insets }: { insets: any }) => {
     return (
@@ -48,8 +108,8 @@ export default function Home() {
         containerStyle={{
           paddingTop: insets.top || heightPixel(5),
         }}
-        name="Danyal Sajid"
-        profile="https://your-image-url.com/profile.jpg"
+        name={welcomeName}
+        profile={userInfo.image_url ? userInfo.image_url : undefined}
       />
     );
   };
@@ -62,15 +122,15 @@ export default function Home() {
         return <Header insets={insets} />;
       },
     });
-  }, [insets, navigation]);
-  const [isFavourite, setIsFavourite] = useState<string[]>([]);
+  }, [insets, navigation, welcomeName, userInfo.image_url]);
 
-  const handleFavouritePress = (itemId: string) => {
-    setIsFavourite(prev =>
-      prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId],
-    );
+  const handleFavouritePress = async (itemId: string) => {
+    try {
+      await dispatch(toggleFavoriteProperty(itemId)).unwrap();
+      await loadProperties();
+    } catch {
+      // postService surfaces errors via checkError
+    }
   };
   return (
     <View style={[appStyles.container]}>
@@ -138,6 +198,12 @@ export default function Home() {
           onPressTab={selectedTabs => console.log(selectedTabs)}
         />
 
+        {loading && properties.length === 0 ? (
+          <View style={dynamicStyles(colors).homeLoading}>
+            <ActivityIndicator size="large" color={colors.purple1} />
+          </View>
+        ) : null}
+
         <View
           style={[
             dynamicStyles(colors).sectionHeader,
@@ -166,13 +232,22 @@ export default function Home() {
           </View>
 
           <FlatList
-            data={newProjectsData}
+            data={newProjectsPreview}
+            ListEmptyComponent={
+              !loading ? (
+                <CustomText fontSize={12} color={colors.greaytext}>
+                  No properties yet.
+                </CustomText>
+              ) : null
+            }
             renderItem={({ item }) => (
               <ProjectCard
-                onPressCard={() => navigate(screens.PropertyDetail)}
+                onPressCard={() =>
+                  navigate(screens.PropertyDetail, { propertyId: item.id })
+                }
                 item={item}
                 onPressFavorite={() => handleFavouritePress(item.id)}
-                isFavorite={isFavourite.includes(item.id)}
+                isFavorite={item.isFavorite}
               />
             )}
             keyExtractor={item => item.id}
@@ -191,7 +266,10 @@ export default function Home() {
           <CustomText weight="regular" fontSize={20} color={colors.primary}>
             {t('RecentProjects')}
           </CustomText>
-          <TouchableOpacity activeOpacity={0.8}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => navigate(screens.NewProjects)}
+          >
             <CustomText
               weight="bold"
               fontSize={12}
@@ -203,16 +281,24 @@ export default function Home() {
           </TouchableOpacity>
         </View>
         <View style={dynamicStyles(colors).recentProjectsContainer}>
-          {recentProjectsData.map(item => (
-            <ProjectCard
-              key={item.id}
-              item={item}
-              onPressCard={() => navigate(screens.PropertyDetail)}
-              onPressFavorite={() => handleFavouritePress(item.id)}
-              cardWidth={widthPixel(345)}
-              isFavorite={isFavourite.includes(item.id)}
-            />
-          ))}
+          {properties.length === 0 && !loading ? (
+            <CustomText fontSize={12} color={colors.greaytext}>
+              No properties yet.
+            </CustomText>
+          ) : (
+            recentProjectsPreview.map(item => (
+              <ProjectCard
+                key={item.id}
+                item={item}
+                onPressCard={() =>
+                  navigate(screens.PropertyDetail, { propertyId: item.id })
+                }
+                onPressFavorite={() => handleFavouritePress(item.id)}
+                cardWidth={widthPixel(345)}
+                isFavorite={item.isFavorite}
+              />
+            ))
+          )}
         </View>
       </CustomScrollView>
     </View>
@@ -293,6 +379,11 @@ const dynamicStyles = (colors: any) =>
     },
     newProjectsList: {
       paddingBottom: heightPixel(2),
+    },
+    homeLoading: {
+      paddingVertical: heightPixel(24),
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     recentProjectsContainer: {
       marginTop: heightPixel(10),

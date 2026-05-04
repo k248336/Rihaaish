@@ -22,6 +22,7 @@ import {
   CustomTextInput,
   CustomScrollView,
   AnimatedCheckbox,
+  LoginErrorBottomModal,
 } from '../../components';
 import { useTheme } from '../../hooks';
 import { useTranslation } from '../../utilities/translations';
@@ -32,7 +33,8 @@ const Login = () => {
   const appStyles = getAppStyles(isDarkMode);
   const { t } = useTranslation();
 
-  const { values, functions } = useLoginController();
+  const { values, functions, loginErrorModal, loginErrorT } =
+    useLoginController();
   const socialBtn = [
     {
       id: 1,
@@ -237,6 +239,29 @@ const Login = () => {
           </View>
         </View>
       </CustomScrollView>
+
+      <LoginErrorBottomModal
+        visible={loginErrorModal.visible}
+        mode={loginErrorModal.mode}
+        headerTitle={
+          loginErrorModal.mode === 'success'
+            ? loginErrorT.successTitle
+            : loginErrorT.alertTitle
+        }
+        message={loginErrorModal.message}
+        showButton={loginErrorModal.mode !== 'success'}
+        buttonTitle={
+          loginErrorModal.mode === 'verify'
+            ? loginErrorT.continueLabel
+            : loginErrorT.ok
+        }
+        onBackdropPress={
+          loginErrorModal.mode === 'success'
+            ? () => {}
+            : functions.hideLoginErrorModal
+        }
+        onButtonPress={functions.onLoginErrorButtonPress}
+      />
     </View>
   );
 };

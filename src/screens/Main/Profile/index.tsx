@@ -5,8 +5,8 @@ import ContactUs from './ContactUs';
 import SupportChat from './SupportChat';
 import AboutUs from './AboutUs';
 import Language from './Language'
-import Security from './Security'
-
+import Security from './Security';
+import ChangePassword from './ChangePassword';
 
 export {
   Profile,
@@ -16,5 +16,6 @@ export {
   SupportChat,
   AboutUs,
   Language,
-  Security
+  Security,
+  ChangePassword,
 };

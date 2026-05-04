@@ -4,10 +4,7 @@ import { httpClient } from '../../api/httpClient';
 
 export const getService = async (api: any, params?: any) => {
   const config = {
-    headers: {
-      token: api_urls.service_token,
-      Authorization: store?.getState()?.auth?.accessToken,
-    },
+    headers: buildAuthHeaders(),
     params: params || {},
   };
 

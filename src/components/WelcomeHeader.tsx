@@ -17,13 +17,20 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const appStyles = getAppStyles(isDarkMode);
+  console.log(profile, 'profile');
+  
 
   return (
     <View style={[dynamicStyles(colors).container, containerStyle]}>
       {!hideProfile && (
         <View style={dynamicStyles(colors).left}>
           <Image
-            source={icons.profiletab}
+            source={
+              typeof profile === 'string' &&
+              (profile.startsWith('http://') || profile.startsWith('https://'))
+                ? { uri: profile }
+                : icons.profiletab
+            }
             style={dynamicStyles(colors).avatar}
           />
           <View style={{ marginLeft: 10 }}>
@@ -107,6 +114,7 @@ const dynamicStyles = (colors: any) =>
     avatar: {
       width: 35,
       height: 35,
+      borderRadius: 999,
       // borderRadius: 999,
     },
 

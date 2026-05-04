@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   Image,
   StyleSheet,
   TouchableOpacity,
@@ -41,8 +40,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   isFavorite,
   onPressCard,
 }) => {
-  const { colors, isDarkMode, } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const appStyles = getAppStyles(isDarkMode);
+  console.log(item, 'item111');
 
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={onPressCard}>
@@ -56,7 +56,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       >
         <View style={dynamicStyles(colors).overlayContent}>
           <GradientView style={dynamicStyles(colors).typeTagContainer}>
-            <CustomText fontSize={12} color='white'>
+            <CustomText fontSize={12} color="white">
               {item.type}
             </CustomText>
           </GradientView>
@@ -85,7 +85,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                   style={dynamicStyles(colors).locationIcon}
                 />
                 <CustomText color={colors.primary} fontSize={10}>
-                  {item.location}
+                  {item.location?.slice(0, 30)}...
                 </CustomText>
               </View>
             </View>
@@ -97,7 +97,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               />
             </GradientView>
           </View>
-          <View style={appStyles.flexRowBetween}>
+          <View style={dynamicStyles(colors).statsBlock}>
             <View style={dynamicStyles(colors).infoRow}>
               <View style={dynamicStyles(colors).infoItem}>
                 <Image
@@ -127,16 +127,23 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               </View>
               <View style={dynamicStyles(colors).infoItem}>
                 <Image
-                
                   source={icons.size}
                   style={dynamicStyles(colors).infoIcon}
                 />
-                <CustomText color={colors.primary} fontSize={12} weight="regular">
+                <CustomText
+                  color={colors.primary}
+                  fontSize={12}
+                  weight="regular"
+                >
                   {item.size} Sqft
                 </CustomText>
               </View>
             </View>
-            <CustomText weight="medium" fontSize={16}>
+            <CustomText
+              style={dynamicStyles(colors).priceText}
+              weight="medium"
+              fontSize={16}
+            >
               {item.price}
             </CustomText>
           </View>
@@ -150,6 +157,9 @@ const dynamicStyles = (colors: any) =>
   StyleSheet.create({
     cardContainer: {
       borderRadius: 20,
+    },
+    statsBlock: {
+      marginTop: heightPixel(4),
     },
     image: {
       height: heightPixel(227),
@@ -187,7 +197,7 @@ const dynamicStyles = (colors: any) =>
     },
     detailsContainer: {
       backgroundColor: colors.white,
-      height: heightPixel(86),
+      // height: heightPixel(86),
       padding: heightPixel(10),
       marginHorizontal: 10,
       bottom: heightPixel(10),
@@ -251,13 +261,8 @@ const dynamicStyles = (colors: any) =>
       height: 20,
     },
     priceText: {
-      fontSize: 18,
-      fontWeight: 'bold',
+      marginTop: heightPixel(10),
       color: colors.black,
-      alignSelf: 'flex-end',
-      position: 'absolute',
-      bottom: 15,
-      right: 15,
     },
   });
 

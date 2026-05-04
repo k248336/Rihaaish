@@ -1,24 +1,27 @@
-import { ImageBackground, StyleSheet } from 'react-native';
+import { ImageBackground } from 'react-native';
 import React, { useEffect } from 'react';
-import { images, navigate, replace, screens } from '../../utilities';
+import { images, replace, screens } from '../../utilities';
 import { useAppSelector } from '../../hooks';
 
 export default function Splash() {
   const { hasSeenOnboarding } = useAppSelector(state => state?.onboarding);
+  const { accessToken } = useAppSelector(state => state?.auth);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
+      if (accessToken) {
+        replace(screens.bottomTabs);
+        return;
+      }
       if (hasSeenOnboarding) {
         replace(screens.login);
       } else {
         replace(screens.onBoarding);
       }
-
-      replace('Login');
     }, 3000);
 
     return () => clearTimeout(timeout);
-  }, []);
+  }, [hasSeenOnboarding, accessToken]);
 
   return (
     <ImageBackground
@@ -27,11 +30,3 @@ export default function Splash() {
     ></ImageBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

@@ -2,11 +2,11 @@ import { Formik } from 'formik';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import {
+  filterNameKeyInput,
   getAppStyles,
   getShadows,
   icons,
   images,
-  pop,
   utility,
 } from '../../../utilities';
 import { heightPixel, widthPixel } from '../../../utilities/helpers';
@@ -15,7 +15,7 @@ import CustomButton from '../../../components/CustomButton';
 import PhoneTextInput from '../../../components/PhoneTextInput';
 import CustomTextInput from '../../../components/CustomTextInput';
 import useEditProfileControllers from '../../../controllers/UserControllers/EditProfileControllers';
-import { useAppSelector, useTheme } from '../../../hooks';
+import { useTheme } from '../../../hooks';
 import {
   CustomText,
   FastImageComp,
@@ -40,7 +40,13 @@ const EditProfile = () => {
         <Image
           style={dynamicStyles(colors).profileImage}
           source={
-            values.image !== '' ? { uri: values.image } : images.dummyAvatar
+            values.image !== ''
+              ? { uri: values.image }
+              : values.userInfo?.image_url &&
+                  (values.userInfo.image_url.startsWith('http://') ||
+                    values.userInfo.image_url.startsWith('https://'))
+                ? { uri: values.userInfo.image_url }
+                : images.dummyAvatar
           }
         />
         <View style={dynamicStyles(colors).cameracontainer}>
@@ -54,12 +60,13 @@ const EditProfile = () => {
       </TouchableOpacity>
 
       <Formik
+        enableReinitialize
         initialValues={{
           ...values.initialValues,
           dob: values.initialValues.dob || '',
         }}
         validationSchema={values.schema}
-        // onSubmit={functions.handleEditProfile}
+        onSubmit={functions.handleEditProfile}
       >
         {({
           handleChange,
@@ -78,9 +85,12 @@ const EditProfile = () => {
                 returnKeyType="next"
                 placeholder={t('FullName')}
                 placeholderTextColor={colors.greish}
-                onChangeText={handleChange('firstname')}
+                onChangeText={text =>
+                  handleChange('firstname')(filterNameKeyInput(text))
+                }
                 value={data.firstname}
                 onBlur={handleBlur('firstname')}
+                maxLength={150}
                 errors={errors.firstname}
                 focus={touched.firstname}
               />
@@ -112,24 +122,24 @@ const EditProfile = () => {
               <DatePicker
                 label={t("DateofBirth")}
                 mode="date"
-                placeholder="DOB"
+                placeholder="1990-01-15"
                 value={data.dob}
                 onDateChange={date => {
                   handleChange('dob')(date);
                 }}
               />
               <CustomTextInput
-                label={t("Location")}
+                label={t('bio')}
                 returnKeyType="next"
                 rightIconSize={20}
                 icon={icons.gradientlocation}
-                autoCapitalize="none"
+                autoCapitalize="sentences"
                 placeholderTextColor={colors.greish}
-                placeholder={t("Location")}
-                onChangeText={handleChange('location')}
-                value={data.location}
-                errors={errors.location}
-                focus={touched.location}
+                placeholder={t('bio')}
+                onChangeText={handleChange('bio')}
+                value={data.bio}
+                errors={errors.bio}
+                focus={touched.bio}
               />
             </View>
 
@@ -137,8 +147,7 @@ const EditProfile = () => {
               gradient
               title={t("saveChanges")}
               btnStyle={dynamicStyles(colors).btnStyle}
-              // onPress={handleSubmit}
-              onPress={() => pop()}
+              onPress={() => handleSubmit()}
             />
           </View>
         )}

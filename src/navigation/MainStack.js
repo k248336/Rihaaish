@@ -9,6 +9,7 @@ import BottomTabs from './BottomTabs';
 import {
   AboutUs,
   AddProperty,
+  LocationPickerScreen,
   ContactUs,
   Language,
   ListedProperty,
@@ -16,6 +17,7 @@ import {
   OnBoarding,
   PropertyDetail,
   Security,
+  ChangePassword,
   Splash,
   SupportChat,
   Login,
@@ -159,7 +161,7 @@ export default function MainStack() {
           headerStyle: {
             backgroundColor: isDarkMode
               ? colors.background
-              : colors.transparent,
+              : colors.white,
           },
           headerTitleStyle: {
             color: colors.primary,
@@ -245,6 +247,18 @@ export default function MainStack() {
         }}
       />
       <Stack.Screen
+        name={screens.changePass}
+        component={ChangePassword}
+        options={{
+          headerTitle: 'Change Password',
+          headerStyle: {
+            backgroundColor: isDarkMode
+              ? colors.background
+              : colors.white,
+          },
+        }}
+      />
+      <Stack.Screen
         name={screens.notifications}
         component={Notification}
         options={{
@@ -266,6 +280,18 @@ export default function MainStack() {
           headerShown: true,
         }}
         component={AddProperty}
+      />
+      <Stack.Screen
+        name={screens.LocationPickerScreen}
+        component={LocationPickerScreen}
+        options={{
+          headerShown: false,
+          statusBarTranslucent: true,
+          statusBarStyle: 'light',
+          statusBarBackgroundColor: 'transparent',
+          navigationBarColor: '#1a1d24',
+          contentStyle: { backgroundColor: '#1a1d24' },
+        }}
       />
     </Stack.Navigator>
   );

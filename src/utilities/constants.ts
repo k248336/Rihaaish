@@ -13,6 +13,7 @@ export const buildNumber = DeviceInfo.getBuildNumber();
 export const lightColors = {
 
   primary: '#060606',
+  background: '#F5F5F5',
   greaytext: '#B9B9B9',
   purple1: '#776CF8',
   purple2: '#3F12A5',
@@ -218,6 +219,7 @@ export const screens = {
   AboutUs: 'AboutUs',
   LanguageScreen: 'LanguageScreen',
   AddProperty: 'AddProperty',
+  LocationPickerScreen: 'LocationPickerScreen',
   preference: 'preference',
   otpVerification: 'OtpVerification',
   EditAvailability: 'EditAvailability',
@@ -308,10 +310,27 @@ export const api_urls = {
   base_url: '',
   service_token: '',
 
-  // api's end points
   user: 'user',
-  login: 'user/login',
-  logout: 'user/logout',
+  login: 'api/v1/auth/login',
+  signup: 'api/v1/auth/signup',
+  logout: 'api/v1/auth/logout',
+  authDeleteAccount: 'api/v1/auth/delete-account',
+  authChangePassword: 'api/v1/auth/change-password',
+  profileGet: 'api/v1/profile/',
+  profileUpdate: 'api/v1/profile/update/',
+  propertyCreate: 'api/v1/properties/create/',
+  propertyListAll: 'api/v1/properties/all/',
+  propertyDetail: (id: string | number) =>
+    `api/v1/properties/detail/${id}/`,
+  propertyDelete: (id: string | number) =>
+    `api/v1/properties/delete/${id}/`,
+  propertyUpdate: (id: string | number) =>
+    `api/v1/properties/update/${id}/`,
+  /** GET list of favorited properties (Bearer token). */
+  favoritesList: 'api/v1/favorites/',
+  /** POST toggle favorite for one property — matches Postman `.../favorites/{{property_id}}/`. */
+  favoriteToggle: (propertyId: string | number) =>
+    `api/v1/favorites/${propertyId}/`,
   sociaLogin: 'user/social-login',
   forgotPassword: 'user/send-otp/mail',
   changePassword: 'user/change-password',

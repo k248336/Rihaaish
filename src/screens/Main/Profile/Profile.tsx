@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useLayoutEffect } from 'react';
+import React, { useLayoutEffect, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -16,6 +16,8 @@ import {
   icons,
   navigate,
   screens,
+  strings,
+  utility,
 } from '../../../utilities';
 import {
   useAppDispatch,
@@ -28,8 +30,9 @@ import { toggleTheme } from '../../../redux/slices/theme';
 import {
   logout,
   deleteAccount,
-  removeAccessToken,
+  clearSession,
 } from '../../../redux/slices/auth';
+import { showLoader, hideLoader } from '../../../redux/slices';
 import { useState } from 'react';
 
 export default function Profile() {
@@ -38,7 +41,30 @@ export default function Profile() {
   const isDarkMode = useAppSelector(state => state.theme.isDarkMode);
   const appStyles = getAppStyles(isDarkMode);
   const { t } = useTranslation();
-  console.log(t, 'ttttt');
+  const { userInfo } = useAppSelector(s => s.auth);
+
+  const displayName = useMemo(() => {
+    const f = userInfo.firstname?.trim();
+    const l = userInfo.lastname?.trim();
+    if (f || l) {
+      return [f, l].filter(Boolean).join(' ');
+    }
+    if (userInfo.email) {
+      return userInfo.email.split('@')[0] || userInfo.email;
+    }
+    return '—';
+  }, [userInfo.firstname, userInfo.lastname, userInfo.email]);
+
+  const avatarSource = useMemo(() => {
+    const url = userInfo.image_url?.trim();
+    if (
+      url &&
+      (url.startsWith('http://') || url.startsWith('https://'))
+    ) {
+      return { uri: url };
+    }
+    return icons.dantal;
+  }, [userInfo.image_url]);
 
   const Header = ({ insets }: { insets: any }) => {
     return (
@@ -76,8 +102,14 @@ export default function Profile() {
       image: icons.security,
       onPress: screens.Security,
     },
-    { id: 5, name: t('notificationPreferences'), image: icons.notification },
-    { id: 6, name: t('darkMode'), image: icons.moon },
+    {
+      id: 5,
+      name: t('changePassword'),
+      image: icons.key,
+      onPress: screens.changePass,
+    },
+    { id: 6, name: t('notificationPreferences'), image: icons.notification },
+    { id: 7, name: t('darkMode'), image: icons.moon },
   ];
   const supportinfo = [
     { id: 1, name: t('aboutUs'), image: icons.about, onPress: screens.AboutUs },
@@ -118,16 +150,36 @@ export default function Profile() {
     dispatch(toggleTheme());
   };
 
-  const handleConfirmLogout = () => {
-    // dispatch(removeAccessToken({}));
+  const handleConfirmLogout = async () => {
     setShowLogoutModal(false);
-    navigate(screens.login);
+    dispatch(showLoader());
+    try {
+      await dispatch(logout()).unwrap();
+    } catch {
+      dispatch(clearSession());
+    } finally {
+      dispatch(hideLoader());
+      navigate(screens.login);
+    }
   };
 
-  const handleConfirmDeleteAccount = () => {
-    // dispatch(deleteAccount());
+  const handleConfirmDeleteAccount = async () => {
     setShowDeleteAccountModal(false);
-    navigate(screens.login);
+    dispatch(showLoader());
+    try {
+      await dispatch(deleteAccount()).unwrap();
+      utility.showAlertMessage('success', strings.accountDeleteSuccess);
+      navigate(screens.login);
+    } catch (err: any) {
+      const msg =
+        err?.message ??
+        (typeof err === 'object' && err && 'message' in err
+          ? String((err as { message?: string }).message)
+          : strings.somethingWentWrong);
+      utility.showAlertMessage('danger', String(msg));
+    } finally {
+      dispatch(hideLoader());
+    }
   };
 
   const navigation = useNavigation();
@@ -145,20 +197,29 @@ export default function Profile() {
         <View style={dynamicStyles(colors).header}>
           <View style={[dynamicStyles(colors).gap, appStyles.flexRow]}>
             <Image
-              source={icons.dantal}
+              source={avatarSource}
               style={dynamicStyles(colors).profileImage}
             />
-            <View>
+            <View style={{ flex: 1 }}>
               <CustomText fontSize={16} weight="bold" color={colors.primary}>
-                {t('name')}
+                {displayName}
               </CustomText>
               <CustomText
                 fontSize={12}
                 weight="regular"
                 color={colors.greaytext}
               >
-                {t('email')}
+                {userInfo.email?.trim() || '—'}
               </CustomText>
+              {!!userInfo.mobile_no?.trim() && (
+                <CustomText
+                  fontSize={12}
+                  weight="regular"
+                  color={colors.greaytext}
+                >
+                  {userInfo.mobile_no}
+                </CustomText>
+              )}
             </View>
           </View>
           <Image
@@ -188,12 +249,12 @@ export default function Profile() {
                   {item.name}
                 </CustomText>
               </View>
-              {item?.id === 5 ? (
+              {item?.id === 6 ? (
                 <CustomSwitch
                   switchVal={isPushNotiEnable}
                   setSwitchVal={onToggleNotification}
                 />
-              ) : item?.id === 6 ? (
+              ) : item?.id === 7 ? (
                 <CustomSwitch
                   switchVal={isDarkMode}
                   setSwitchVal={onToggleDarkMode}
@@ -215,8 +276,8 @@ export default function Profile() {
                   setShowDeleteAccountModal(true);
                 } else if (item.id === 5) {
                   setShowLogoutModal(true);
-                } else {
-                  item.onPress && navigate(item.onPress);
+                } else if (typeof item.onPress === 'string') {
+                  navigate(item.onPress);
                 }
               }}
               style={dynamicStyles(colors).innercard}
@@ -249,6 +310,9 @@ export default function Profile() {
         backgroundcolor={colors.redOpacity}
         subText={t('deleteAccountDes')}
         logoImage={icons.deleteicon}
+        checkboxlabel=""
+        check={false}
+        setCheck={() => {}}
         visible={showDeleteAccountModal}
         confirmBtnTitle={t('Yes')}
         onConfirm={handleConfirmDeleteAccount}
@@ -263,6 +327,9 @@ export default function Profile() {
         backgroundcolor={colors.redOpacity}
         subText={t('logoutDes')}
         logoImage={icons.logout}
+        checkboxlabel=""
+        check={false}
+        setCheck={() => {}}
         visible={showLogoutModal}
         confirmBtnTitle={t('Yes')}
         onConfirm={handleConfirmLogout}
