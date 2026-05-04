@@ -1,0 +1,74 @@
+Project Name: Rihaaish (Smart Property Dealing App)
+Group Leader: Mubashir Ali
+Date: 09 February 2026
+____________________________________
+
+Week: 14 Report
+
+1. Project Status Overview:
+The Rihaaish mobile application is near completion. 
+Most core functionalities including frontend, backend, and testing 
+have been completed. The project is approximately 80–90% complete.
+
+____________________________________
+
+2. Completed Work:
+- Frontend development (UI/UX, screens, navigation)
+- Backend development (APIs, database integration)
+- User authentication (Email & Google login)
+- Property listing and search functionality
+- Add property feature
+- Favorites and profile management
+- Functional and basic testing completed
+
+____________________________________
+
+3. Work Done This Week (QA Focus):
+This week the team mainly worked on resolving QA-reported issues 
+and improving application usability.
+
+QA Issues Addressed:
+- Keyboard obstructing input fields while typing
+- “Send OTP” button not working
+- No message when no property is listed
+- Missing current location button on map screen
+- Notifications screen showing sample data
+- Search bar not responsive
+
+____________________________________
+
+4. Remaining Work:
+- Payment Gateway Integration
+- Chatbot Integration (AI-based)
+- Map Integration (location services)
+
+____________________________________
+
+5. Cost Baseline Status:
+- No additional external cost incurred this week
+- Work handled within existing team resources
+- Focus was on bug fixing and quality improvement
+- Project remains within planned cost baseline
+
+____________________________________
+
+6. Challenges:
+- Integration of third-party services (payment gateway, chatbot, maps)
+- API configuration and handling complexity
+- Additional testing required for integrations
+
+____________________________________
+
+7. Next Steps:
+- Integrate secure payment gateway
+- Implement AI-based chatbot
+- Complete map integration
+- Perform system and integration testing
+- Finalize documentation and deployment
+
+____________________________________
+
+8. Conclusion:
+The project is in its final phase. Most development is complete, 
+and current focus is on fixing QA issues and integrating advanced features. 
+The project is on track and within budget.

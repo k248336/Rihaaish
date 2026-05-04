@@ -306,7 +306,8 @@ export const screens = {
 };
 
 export const api_urls = {
-  base_url: 'https://rihaish-mobile-app-backends.onrender.com/',
+  /** Set to your Python API root (with trailing slash). Leave empty to use the bundled mock API. */
+  base_url: '',
   service_token: '',
 
   user: 'user',

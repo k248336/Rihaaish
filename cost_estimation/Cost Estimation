@@ -1,0 +1,74 @@
+Project Name: Rihaaish
+Group Leader: Mubashir Ali
+Date: 27 April 2026
+____________________________________
+
+1. Introduction:
+This report defines the estimated cost baseline for the Rihaaish project. 
+It includes all expected costs required for development, testing, deployment, 
+and maintenance of the application.
+
+2. Cost Estimation Breakdown:
+
+A. Human Resource Cost:
+- Project Manager (1)        : PKR 40,000
+- Developers (2)             : PKR 80,000
+- UI/UX Designer (1)         : PKR 30,000
+- Tester/QA (1)              : PKR 20,000
+----------------------------------------
+Total HR Cost                : PKR 170,000
+
+B. Software & Tools Cost:
+- Development Tools (VS Code, etc.)     : Free
+- Firebase (Basic Plan)                : PKR 5,000
+- API Services (Google Maps, ML APIs)  : PKR 10,000
+----------------------------------------
+Total Tools Cost             : PKR 15,000
+
+C. Infrastructure Cost:
+- Cloud Hosting (AWS/Server)           : PKR 20,000
+- Database Hosting                     : PKR 10,000
+----------------------------------------
+Total Infrastructure Cost   : PKR 30,000
+
+D. Testing & Deployment Cost:
+- Testing Tools & Resources           : PKR 5,000
+- Deployment (Play Store / App Store) : PKR 8,000
+----------------------------------------
+Total Deployment Cost       : PKR 13,000
+
+E. Miscellaneous Cost:
+- Internet, utilities, contingencies  : PKR 10,000
+
+____________________________________
+
+3. Total Project Cost:
+Total Estimated Cost = 
+HR Cost + Tools Cost + Infrastructure + Deployment + Miscellaneous
+
+= 170,000 + 15,000 + 30,000 + 13,000 + 10,000  
+= PKR 238,000
+
+____________________________________
+
+4. Cost Baseline Summary:
+The total cost baseline for the Rihaaish project is estimated at PKR 238,000. 
+This baseline will be used to monitor and control project expenses 
+throughout the development lifecycle.
+
+____________________________________
+
+5. Assumptions:
+- Team members are working part-time (student-level project)
+- Basic cloud and API usage is assumed
+- Costs may vary depending on usage and scaling
+
+6. Constraints:
+- Limited budget
+- Limited access to paid APIs and tools
+
+____________________________________
+
+7. Conclusion:
+The project cost is within a reasonable budget range. Proper cost monitoring 
+will ensure that the project stays within the defined baseline.

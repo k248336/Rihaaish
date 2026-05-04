@@ -1,16 +1,6 @@
 import { store } from '../store';
 import { api_urls, utility } from '../../utilities';
-import { getApiBaseUrl } from '../../config/apiEnvironment';
 import { httpClient } from '../../api/httpClient';
-
-function authHeaders(extra?: Record<string, string>) {
-  const auth = store?.getState()?.auth?.accessToken;
-  return {
-    ...extra,
-    ...(api_urls.service_token ? { token: api_urls.service_token } : {}),
-    ...(auth ? { Authorization: auth } : {}),
-  };
-}
 
 export const postService = (
   api: any,
